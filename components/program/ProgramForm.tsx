@@ -15,7 +15,7 @@ const programSchema = z.object({
 
 type ProgramFormData = z.infer<typeof programSchema>;
 
-export default function ProgramForm({ onSuccess }: { onSuccess?: () => void }) {
+export default function ProgramForm({ onSuccess, onCancel }: { onSuccess?: () => void, onCancel?: () => void }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
@@ -61,42 +61,43 @@ export default function ProgramForm({ onSuccess }: { onSuccess?: () => void }) {
       <h2 className="text-xl font-bold mb-4">Create Health Program</h2>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700">
             Program Name
           </label>
           <input
+            id="name"
             type="text"
             {...register("name")}
             placeholder="e.g., TB Control, Malaria Prevention"
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
           />
           {errors.name && (
-            <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+            <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
           )}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700">
             Description
           </label>
           <textarea
-            {...register("description")}
+            id="description"
             rows={3}
+            {...register("description")}
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
             placeholder="Program description and objectives"
           />
           {errors.description && (
-            <p className="text-red-500 text-sm mt-1">
-              {errors.description.message}
-            </p>
+            <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>
           )}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
+          <label htmlFor="status" className="block text-sm font-medium text-gray-700">
             Status
           </label>
           <select
+            id="status"
             {...register("status")}
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md">
             <option value="active">Active</option>
@@ -104,7 +105,15 @@ export default function ProgramForm({ onSuccess }: { onSuccess?: () => void }) {
           </select>
         </div>
 
-        <div>
+        <div className="flex justify-end space-x-3">
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300">
+              Cancel
+            </button>
+          )}
           <button
             type="submit"
             disabled={isSubmitting}

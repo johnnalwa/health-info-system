@@ -1,84 +1,75 @@
-// app/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
-import { Dialog } from "@headlessui/react";
 import Link from "next/link";
-import { FaUserPlus, FaUsers, FaHospital, FaBook, FaChartLine, FaCalendarAlt, FaCode } from "react-icons/fa";
+import { useState, useEffect } from "react";
+import { FaUsers, FaHospital, FaCalendarAlt, FaCode } from "react-icons/fa";
 import { IoMdAdd } from "react-icons/io";
+import { Dialog } from "@headlessui/react";
 import ClientForm from "@/components/client/ClientForm";
 import ProgramForm from "@/components/program/ProgramForm";
+import DashboardLayout from "@/components/layout/DashboardLayout";
+
+type Stats = {
+  clientCount: number;
+  programCount: number;
+  enrollmentCount: number;
+};
 
 export default function Home() {
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
   const [isProgramModalOpen, setIsProgramModalOpen] = useState(false);
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<Stats>({
     clientCount: 0,
     programCount: 0,
-    enrollmentCount: 0
+    enrollmentCount: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch statistics from the API
   useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+
     const fetchStats = async () => {
-      setIsLoading(true);
       try {
-        console.log('Fetching dashboard statistics...');
-        const response = await fetch('/api/stats');
+        setIsLoading(true);
+        const response = await fetch("/api/stats", {
+          signal,
+          cache: 'force-cache',
+          next: { revalidate: 60 } // Revalidate every minute
+        });
         
         if (!response.ok) {
-          throw new Error(`Error fetching stats: ${response.status}`);
+          throw new Error("Failed to fetch stats");
         }
         
         const data = await response.json();
-        console.log('Stats received:', data);
-        
-        if (data && typeof data.clientCount !== 'undefined') {
-          setStats({
-            clientCount: data.clientCount,
-            programCount: data.programCount,
-            enrollmentCount: data.enrollmentCount
-          });
-        } else {
-          console.error('Invalid stats data format:', data);
-        }
+        setStats(data);
       } catch (error) {
-        console.error('Error fetching statistics:', error);
+        console.error("Error fetching stats:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchStats();
+    
+    return () => controller.abort();
   }, []);
 
   const handleClientSuccess = () => {
     setIsClientModalOpen(false);
-    // Refresh stats after adding a new client
-    fetch('/api/stats').then(res => res.json()).then(data => {
-      setStats({
-        clientCount: data.clientCount,
-        programCount: data.programCount,
-        enrollmentCount: data.enrollmentCount
-      });
-    });
+    // Refresh stats
+    fetch("/api/stats").then(res => res.json()).then(data => setStats(data));
   };
 
   const handleProgramSuccess = () => {
     setIsProgramModalOpen(false);
-    // Refresh stats after adding a new program
-    fetch('/api/stats').then(res => res.json()).then(data => {
-      setStats({
-        clientCount: data.clientCount,
-        programCount: data.programCount,
-        enrollmentCount: data.enrollmentCount
-      });
-    });
+    // Refresh stats
+    fetch("/api/stats").then(res => res.json()).then(data => setStats(data));
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <DashboardLayout>
       {/* Hero section */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
@@ -238,7 +229,7 @@ export default function Home() {
               </button>
             </div>
             <div className="p-6 max-h-[80vh] overflow-y-auto">
-              <ClientForm onSuccess={handleClientSuccess} />
+              <ClientForm onSuccess={handleClientSuccess} onCancel={() => setIsClientModalOpen(false)} />
             </div>
           </Dialog.Panel>
         </div>
@@ -264,11 +255,11 @@ export default function Home() {
               </button>
             </div>
             <div className="p-6 max-h-[80vh] overflow-y-auto">
-              <ProgramForm onSuccess={handleProgramSuccess} />
+              <ProgramForm onSuccess={handleProgramSuccess} onCancel={() => setIsProgramModalOpen(false)} />
             </div>
           </Dialog.Panel>
         </div>
       </Dialog>
-    </div>
+    </DashboardLayout>
   );
 }
