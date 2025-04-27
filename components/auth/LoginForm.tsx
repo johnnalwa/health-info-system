@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 
@@ -13,21 +13,25 @@ export default function LoginForm() {
   const [error, setError] = useState("");
   const router = useRouter();
 
+  // We'll rely on middleware for redirects instead of client-side checks
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
-
-      router.push("/dashboard");
-      router.refresh();
+      
+      if (data.session) {
+        // Use Next.js router for client-side navigation
+        router.push("/dashboard");
+      }
     } catch (error: Error | unknown) {
       setError(error instanceof Error ? error.message : "Failed to sign in");
     } finally {

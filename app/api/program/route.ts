@@ -7,14 +7,32 @@ export async function GET() {
   try {
     const supabase = createServerSupabaseClient();
 
-    const { data, error } = await supabase
+    // First get all programs
+    const { data: programs, error: programsError } = await supabase
       .from("programs")
       .select("*")
       .order("name");
 
-    if (error) throw error;
+    if (programsError) throw programsError;
 
-    return NextResponse.json(data);
+    // Get enrollment counts for each program
+    const programsWithEnrollments = await Promise.all(
+      programs.map(async (program) => {
+        const { count, error: countError } = await supabase
+          .from("enrollments")
+          .select("*", { count: "exact", head: true })
+          .eq("program_id", program.id);
+
+        if (countError) {
+          console.error("Error fetching enrollment count:", countError);
+          return { ...program, enrollment_count: 0 };
+        }
+
+        return { ...program, enrollment_count: count || 0 };
+      })
+    );
+
+    return NextResponse.json(programsWithEnrollments);
   } catch (error) {
     console.error("Error fetching programs:", error);
     return NextResponse.json(

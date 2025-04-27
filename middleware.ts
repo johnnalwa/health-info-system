@@ -1,34 +1,13 @@
 
-import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
 import { NextResponse } from "next/server";
-
 import type { NextRequest } from "next/server";
 
+// Simple pass-through middleware - no authentication required
 export async function middleware(req: NextRequest) {
-  const res = NextResponse.next();
-  const supabase = createMiddlewareClient({ req, res });
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  // Check if the user is authenticated
-  if (!session && req.nextUrl.pathname.startsWith("/dashboard")) {
-    const redirectUrl = req.nextUrl.clone();
-    redirectUrl.pathname = "/login";
-    return NextResponse.redirect(redirectUrl);
-  }
-
-  // If user is authenticated and trying to access login page, redirect to dashboard
-  if (session && req.nextUrl.pathname === "/login") {
-    const redirectUrl = req.nextUrl.clone();
-    redirectUrl.pathname = "/dashboard";
-    return NextResponse.redirect(redirectUrl);
-  }
-
-  return res;
+  return NextResponse.next();
 }
 
+// No routes to match - middleware is essentially disabled
 export const config = {
-  matcher: ["/dashboard/:path*", "/login"],
+  matcher: []
 };
