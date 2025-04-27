@@ -3,11 +3,14 @@
 import { useState, useEffect, useMemo } from "react";
 import { FaEdit, FaTrash, FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
 
+// Define the Program type based on the API response
 type Program = {
   id: string;
   name: string;
   description: string;
   status: string;
+  created_at?: string;
+  updated_at?: string;
 };
 
 type SortConfig = {
@@ -21,7 +24,7 @@ export default function ProgramList() {
   const [error, setError] = useState<string | null>(null);
   const [sortConfig, setSortConfig] = useState<SortConfig | null>(null);
 
-  // Optimized data fetching with caching
+  // Fetch programs data
   useEffect(() => {
     const controller = new AbortController();
     const signal = controller.signal;
@@ -73,10 +76,13 @@ export default function ProgramList() {
     if (!sortConfig) return programs;
     
     return [...programs].sort((a, b) => {
-      if (a[sortConfig.key] < b[sortConfig.key]) {
+      const aValue = a[sortConfig.key] || '';
+      const bValue = b[sortConfig.key] || '';
+      
+      if (aValue < bValue) {
         return sortConfig.direction === 'ascending' ? -1 : 1;
       }
-      if (a[sortConfig.key] > b[sortConfig.key]) {
+      if (aValue > bValue) {
         return sortConfig.direction === 'ascending' ? 1 : -1;
       }
       return 0;
@@ -109,7 +115,7 @@ export default function ProgramList() {
     );
   }
 
-  if (sortedPrograms.length === 0) {
+  if (programs.length === 0) {
     return (
       <div className="bg-gray-50 border border-gray-200 p-6 rounded-lg text-center">
         <p className="text-gray-500">No programs found. Create your first program using the button above.</p>
@@ -171,10 +177,10 @@ export default function ProgramList() {
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div className="flex space-x-2">
                     <button className="text-indigo-600 hover:text-indigo-900">
-                      <FaEdit />
+                      <FaEdit title="Edit" />
                     </button>
                     <button className="text-red-600 hover:text-red-900">
-                      <FaTrash />
+                      <FaTrash title="Delete" />
                     </button>
                   </div>
                 </td>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Client, Program, Enrollment } from "@/lib/types";
+import { Client, Program } from "@/lib/types";
 import { FaArrowLeft, FaCalendarPlus } from "react-icons/fa";
 import Link from "next/link";
 import DashboardLayout from "@/components/layout/DashboardLayout";

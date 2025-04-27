@@ -1,13 +1,13 @@
 // app/api/client/[id]/route.ts
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/client";
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: { id: string } }
 ) {
-  const clientId = params.id;
+  const clientId = context.params.id;
 
   if (!clientId) {
     return NextResponse.json({ error: "Client ID is required" }, { status: 400 });
@@ -60,14 +60,15 @@ export async function GET(
     }
 
     // Format the programs data
-    const programs = enrollments.map((enrollment) => ({
-      id: enrollment.program.id,
-      name: enrollment.program.name,
-      description: enrollment.program.description,
-      status: enrollment.program.status,
-      enrollment_date: enrollment.enrollment_date,
-      enrollment_status: enrollment.status,
-      notes: enrollment.notes,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const programs = (enrollments || []).map((enrollment: any) => ({
+      id: enrollment.program?.id || '',
+      name: enrollment.program?.name || '',
+      description: enrollment.program?.description || '',
+      status: enrollment.program?.status || '',
+      enrollment_date: enrollment.enrollment_date || '',
+      enrollment_status: enrollment.status || '',
+      notes: enrollment.notes || '',
     }));
 
     // Return client with programs
