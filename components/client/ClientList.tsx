@@ -5,20 +5,21 @@ import { FaEdit, FaTrash, FaSort, FaSortUp, FaSortDown, FaEye } from "react-icon
 import Link from "next/link";
 import { Client } from "@/lib/types";
 
+interface ClientListProps {
+  searchTerm?: string;
+}
+
 type SortConfig = {
   key: keyof Client;
   direction: 'ascending' | 'descending';
 };
 
-export default function ClientList() {
+export default function ClientList({ searchTerm = "" }: ClientListProps) {
   const [clients, setClients] = useState<Client[]>([]);
-  const [filteredClients, setFilteredClients] = useState<Client[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sortConfig, setSortConfig] = useState<SortConfig | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
 
-  // Optimized data fetching with caching
   useEffect(() => {
     const controller = new AbortController();
     const signal = controller.signal;
@@ -37,7 +38,6 @@ export default function ClientList() {
         
         const data = await response.json();
         setClients(data);
-        setFilteredClients(data);
         setError(null);
       } catch (err) {
         if (err instanceof Error && err.name !== 'AbortError') {
@@ -55,25 +55,6 @@ export default function ClientList() {
     return () => controller.abort();
   }, []);
 
-  // Search functionality
-  useEffect(() => {
-    if (searchTerm.trim() === "") {
-      setFilteredClients(clients);
-      return;
-    }
-
-    const term = searchTerm.toLowerCase();
-    const filtered = clients.filter(
-      (client) =>
-        (client.first_name && client.first_name.toLowerCase().includes(term)) ||
-        (client.last_name && client.last_name.toLowerCase().includes(term)) ||
-        (client.contact_number && client.contact_number.includes(term)) ||
-        (client.email && client.email.toLowerCase().includes(term))
-    );
-
-    setFilteredClients(filtered);
-  }, [searchTerm, clients]);
-
   // Sorting logic
   const requestSort = (key: keyof Client) => {
     let direction: 'ascending' | 'descending' = 'ascending';
@@ -85,8 +66,23 @@ export default function ClientList() {
     setSortConfig({ key, direction });
   };
 
-  // Memoized sorted clients to prevent unnecessary re-renders
-  const sortedClients = useMemo(() => {
+  // Get sorted and filtered clients
+  const getFilteredAndSortedClients = () => {
+    // First filter by search term
+    let filteredClients = clients;
+    
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filteredClients = clients.filter(
+        (client) =>
+          (client.first_name && client.first_name.toLowerCase().includes(term)) ||
+          (client.last_name && client.last_name.toLowerCase().includes(term)) ||
+          (client.contact_number && client.contact_number.includes(term)) ||
+          (client.email && client.email.toLowerCase().includes(term))
+      );
+    }
+    
+    // Then sort
     if (!sortConfig) return filteredClients;
     
     return [...filteredClients].sort((a, b) => {
@@ -101,7 +97,7 @@ export default function ClientList() {
       }
       return 0;
     });
-  }, [filteredClients, sortConfig]);
+  };
 
   // Helper to get sort icon
   const getSortIcon = (key: keyof Client) => {
@@ -112,6 +108,8 @@ export default function ClientList() {
       <FaSortUp className="ml-1 text-blue-600" /> : 
       <FaSortDown className="ml-1 text-blue-600" />;
   };
+
+  const filteredAndSortedClients = useMemo(() => getFilteredAndSortedClients(), [clients, searchTerm, sortConfig]);
 
   if (isLoading) {
     return (
@@ -136,7 +134,7 @@ export default function ClientList() {
         <input
           type="text"
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => {}}
           placeholder="Search by name, phone, or email"
           className="w-full px-3 py-2 border border-gray-300 rounded-md"
         />
@@ -184,8 +182,8 @@ export default function ClientList() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {sortedClients.length > 0 ? (
-              sortedClients.map((client) => (
+            {filteredAndSortedClients.length > 0 ? (
+              filteredAndSortedClients.map((client) => (
                 <tr key={client.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{client.first_name || '-'}</div>

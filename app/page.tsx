@@ -2,8 +2,18 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { FaUsers, FaHospital, FaCalendarAlt, FaCode } from "react-icons/fa";
-import { IoMdAdd } from "react-icons/io";
+import { 
+  FaUserFriends, 
+  FaHospitalAlt, 
+  FaClipboardList, 
+  FaBookMedical, 
+  FaFileMedicalAlt,
+  FaUserPlus,
+  FaPlusCircle,
+  FaChartLine,
+  FaCode
+} from "react-icons/fa";
+import { MdDashboard } from "react-icons/md";
 import { Dialog } from "@headlessui/react";
 import ClientForm from "@/components/client/ClientForm";
 import ProgramForm from "@/components/program/ProgramForm";
@@ -81,7 +91,10 @@ export default function Home() {
       {/* Hero section */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl md:text-4xl font-bold mb-3">Health Information System</h1>
+          <div className="flex items-center mb-3">
+            <MdDashboard className="text-3xl mr-3" />
+            <h1 className="text-3xl md:text-4xl font-bold">Health Information System</h1>
+          </div>
           <p className="text-lg md:text-xl opacity-90 max-w-3xl">Manage clients and health programs efficiently with our comprehensive health management platform</p>
         </div>
       </div>
@@ -89,10 +102,10 @@ export default function Home() {
       {/* Stats overview */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-lg shadow-md p-6 border-t-4 border-blue-500">
+          <div className="bg-white rounded-lg shadow-md p-6 border-t-4 border-blue-500 hover:shadow-lg transition-all duration-300">
             <div className="flex items-center">
               <div className="p-3 rounded-full bg-blue-100 text-blue-600 mr-4">
-                <FaUsers className="text-xl" />
+                <FaUserFriends className="text-2xl" />
               </div>
               <div>
                 <p className="text-sm text-gray-500 uppercase font-semibold">Total Clients</p>
@@ -106,10 +119,10 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow-md p-6 border-t-4 border-green-500">
+          <div className="bg-white rounded-lg shadow-md p-6 border-t-4 border-green-500 hover:shadow-lg transition-all duration-300">
             <div className="flex items-center">
               <div className="p-3 rounded-full bg-green-100 text-green-600 mr-4">
-                <FaHospital className="text-xl" />
+                <FaHospitalAlt className="text-2xl" />
               </div>
               <div>
                 <p className="text-sm text-gray-500 uppercase font-semibold">Total Programs</p>
@@ -123,10 +136,10 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow-md p-6 border-t-4 border-purple-500">
+          <div className="bg-white rounded-lg shadow-md p-6 border-t-4 border-purple-500 hover:shadow-lg transition-all duration-300">
             <div className="flex items-center">
               <div className="p-3 rounded-full bg-purple-100 text-purple-600 mr-4">
-                <FaCalendarAlt className="text-xl" />
+                <FaClipboardList className="text-2xl" />
               </div>
               <div>
                 <p className="text-sm text-gray-500 uppercase font-semibold">Total Enrollments</p>
@@ -145,52 +158,67 @@ export default function Home() {
 
       {/* Quick actions */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h2 className="text-2xl font-bold mb-6">Quick Actions</h2>
+        <div className="flex items-center mb-6">
+          <FaChartLine className="text-xl mr-2 text-gray-700" />
+          <h2 className="text-2xl font-bold">Quick Actions</h2>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-            <h3 className="text-lg font-semibold mb-3">Clients</h3>
+          <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-all duration-300 border-l-4 border-blue-500">
+            <div className="flex items-center mb-3">
+              <FaUserFriends className="text-xl mr-2 text-blue-600" />
+              <h3 className="text-lg font-semibold">Clients</h3>
+            </div>
             <p className="text-gray-600 mb-4">View, add, and manage client information</p>
             <div className="flex space-x-3">
-              <Link href="/clients" className="text-blue-600 hover:text-blue-800 font-medium">
-                View All
+              <Link href="/clients" className="text-blue-600 hover:text-blue-800 font-medium flex items-center hover:underline">
+                <span>View All</span>
               </Link>
               <button
                 onClick={() => setIsClientModalOpen(true)}
-                className="text-blue-600 hover:text-blue-800 font-medium flex items-center"
+                className="text-blue-600 hover:text-blue-800 font-medium flex items-center hover:underline"
               >
-                <IoMdAdd className="mr-1" /> Add New
+                <FaUserPlus className="mr-1" /> Add New
               </button>
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-            <h3 className="text-lg font-semibold mb-3">Programs</h3>
+          <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-all duration-300 border-l-4 border-green-500">
+            <div className="flex items-center mb-3">
+              <FaHospitalAlt className="text-xl mr-2 text-green-600" />
+              <h3 className="text-lg font-semibold">Programs</h3>
+            </div>
             <p className="text-gray-600 mb-4">Manage health programs and services</p>
             <div className="flex space-x-3">
-              <Link href="/programs" className="text-blue-600 hover:text-blue-800 font-medium">
-                View All
+              <Link href="/programs" className="text-green-600 hover:text-green-800 font-medium flex items-center hover:underline">
+                <span>View All</span>
               </Link>
               <button
                 onClick={() => setIsProgramModalOpen(true)}
-                className="text-blue-600 hover:text-blue-800 font-medium flex items-center"
+                className="text-green-600 hover:text-green-800 font-medium flex items-center hover:underline"
               >
-                <IoMdAdd className="mr-1" /> Add New
+                <FaPlusCircle className="mr-1" /> Add New
               </button>
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-            <h3 className="text-lg font-semibold mb-3">Enrollments</h3>
+          <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-all duration-300 border-l-4 border-purple-500">
+            <div className="flex items-center mb-3">
+              <FaBookMedical className="text-xl mr-2 text-purple-600" />
+              <h3 className="text-lg font-semibold">Enrollments</h3>
+            </div>
             <p className="text-gray-600 mb-4">Manage client program enrollments</p>
             <div className="flex space-x-3">
-              <Link href="/clients" className="text-blue-600 hover:text-blue-800 font-medium">
-                Manage
+              <Link href="/clients" className="text-purple-600 hover:text-purple-800 font-medium flex items-center hover:underline">
+                <FaClipboardList className="mr-1" /> Manage
               </Link>
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-            <h3 className="text-lg font-semibold mb-3">API Documentation</h3>
+          <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-all duration-300 border-l-4 border-indigo-500">
+            <div className="flex items-center mb-3">
+              <FaFileMedicalAlt className="text-xl mr-2 text-indigo-600" />
+              <h3 className="text-lg font-semibold">API Documentation</h3>
+            </div>
             <p className="text-gray-600 mb-4">Access API endpoints and documentation</p>
             <div className="flex space-x-3">
-              <Link href="/api-docs" className="text-blue-600 hover:text-blue-800 font-medium flex items-center">
+              <Link href="/api-docs" className="text-indigo-600 hover:text-indigo-800 font-medium flex items-center hover:underline">
                 <FaCode className="mr-1" /> View Docs
               </Link>
             </div>
@@ -200,8 +228,22 @@ export default function Home() {
 
       {/* Client Modal */}
       {isClientModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded shadow-lg w-full max-w-lg">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
+          <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-lg">
+            <div className="flex items-center justify-between mb-4 pb-2 border-b">
+              <div className="flex items-center">
+                <FaUserPlus className="text-blue-600 mr-2 text-xl" />
+                <h2 className="text-xl font-bold">Add New Client</h2>
+              </div>
+              <button 
+                onClick={() => setIsClientModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
             <ClientForm onSuccess={handleClientSuccess} onCancel={() => setIsClientModalOpen(false)} />
           </div>
         </div>
@@ -209,8 +251,22 @@ export default function Home() {
 
       {/* Program Modal */}
       {isProgramModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded shadow-lg w-full max-w-lg">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
+          <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-lg">
+            <div className="flex items-center justify-between mb-4 pb-2 border-b">
+              <div className="flex items-center">
+                <FaHospitalAlt className="text-green-600 mr-2 text-xl" />
+                <h2 className="text-xl font-bold">Add New Program</h2>
+              </div>
+              <button 
+                onClick={() => setIsProgramModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
             <ProgramForm onSuccess={handleProgramSuccess} onCancel={() => setIsProgramModalOpen(false)} />
           </div>
         </div>

@@ -1,201 +1,110 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { IoMdAdd } from "react-icons/io";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import { useState } from "react";
+import { 
+  FaHospitalAlt, 
+  FaPlusCircle, 
+  FaSearch,
+  FaFilter,
+  FaSortAmountDown
+} from "react-icons/fa";
+import ProgramList from "@/components/program/ProgramList";
 import ProgramForm from "@/components/program/ProgramForm";
-import { FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
-
-// Define the Program type
-interface Program {
-  id: string;
-  name: string;
-  description: string;
-  status: string;
-  created_at?: string;
-}
+import DashboardLayout from "@/components/layout/DashboardLayout";
 
 export default function ProgramsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [programs, setPrograms] = useState<Program[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [sortConfig, setSortConfig] = useState<{key: keyof Program, direction: 'ascending' | 'descending'} | null>(null);
-  
-  // Fetch programs data with optimized fetching
-  useEffect(() => {
-    const controller = new AbortController();
-    const signal = controller.signal;
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortField, setSortField] = useState<string>("name");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
-    const fetchPrograms = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch("/api/program", { 
-          signal,
-          next: { revalidate: 60 }, // Cache for 60 seconds
-          cache: 'force-cache' // Use Next.js cache
-        });
-        
-        if (!response.ok) {
-          throw new Error("Failed to fetch programs");
-        }
-        
-        const data = await response.json();
-        setPrograms(data);
-        setError(null);
-      } catch (err) {
-        if (err instanceof Error && err.name !== 'AbortError') {
-          console.error("Error fetching programs:", err);
-          setError("Failed to load programs. Please try again later.");
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchPrograms();
-
-    // Cleanup function to abort fetch on unmount
-    return () => controller.abort();
-  }, []);
-
-  // Handle program creation success
-  const handleProgramCreated = () => {
+  const handleSuccess = () => {
     setIsModalOpen(false);
-    // Refetch programs after creation
-    fetch("/api/program", { cache: 'no-store' })
-      .then(res => res.json())
-      .then(data => setPrograms(data))
-      .catch(err => console.error("Error refetching programs:", err));
   };
 
-  // Sorting logic
-  const requestSort = (key: keyof Program) => {
-    let direction: 'ascending' | 'descending' = 'ascending';
-    
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
-      direction = 'descending';
+  const handleSort = (field: string) => {
+    if (field === sortField) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
     }
-    
-    setSortConfig({ key, direction });
   };
 
-  // Get sorted programs
-  const getSortedPrograms = () => {
-    if (!sortConfig) return programs;
-    
-    return [...programs].sort((a, b) => {
-      const aValue = a[sortConfig.key] || '';
-      const bValue = b[sortConfig.key] || '';
-      
-      if (aValue < bValue) {
-        return sortConfig.direction === 'ascending' ? -1 : 1;
-      }
-      if (aValue > bValue) {
-        return sortConfig.direction === 'ascending' ? 1 : -1;
-      }
-      return 0;
-    });
-  };
-
-  // Helper to get sort icon
-  const getSortIcon = (key: keyof Program) => {
-    if (!sortConfig || sortConfig.key !== key) {
-      return <FaSort className="ml-1 text-gray-400" />;
-    }
-    return sortConfig.direction === 'ascending' ? 
-      <FaSortUp className="ml-1 text-green-600" /> : 
-      <FaSortDown className="ml-1 text-green-600" />;
-  };
-  
   return (
     <DashboardLayout>
       <div className="p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">Programs</h1>
-          <button
-            className="flex items-center px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-            onClick={() => setIsModalOpen(true)}
-          >
-            <IoMdAdd className="mr-2" /> Create Program
-          </button>
-        </div>
-        
-        {isLoading ? (
-          <div className="flex justify-center items-center p-8">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center">
+              <FaHospitalAlt className="text-green-600 text-2xl mr-3" />
+              <h1 className="text-2xl font-bold text-gray-800">Health Programs</h1>
+            </div>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg flex items-center transition-colors duration-200"
+            >
+              <FaPlusCircle className="mr-2" />
+              Add New Program
+            </button>
           </div>
-        ) : error ? (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-            <p>{error}</p>
-          </div>
-        ) : programs.length === 0 ? (
-          <div className="bg-gray-50 border border-gray-200 p-6 rounded-lg text-center">
-            <p className="text-gray-500">No programs found. Create your first program using the button above.</p>
-          </div>
-        ) : (
-          <div className="bg-white shadow-md rounded-lg overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th 
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                      onClick={() => requestSort('name')}
-                    >
-                      <div className="flex items-center">
-                        Name {getSortIcon('name')}
-                      </div>
-                    </th>
-                    <th 
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                      onClick={() => requestSort('description')}
-                    >
-                      <div className="flex items-center">
-                        Description {getSortIcon('description')}
-                      </div>
-                    </th>
-                    <th 
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                      onClick={() => requestSort('status')}
-                    >
-                      <div className="flex items-center">
-                        Status {getSortIcon('status')}
-                      </div>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {getSortedPrograms().map((program) => (
-                    <tr key={program.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{program.name}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-500">{program.description}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          program.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {program.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          
+          <div className="bg-white p-4 rounded-lg shadow-md mb-6">
+            <div className="flex items-center">
+              <div className="relative flex-grow">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaSearch className="text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                  placeholder="Search programs by name or description..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <div className="ml-4 flex space-x-2">
+                <button className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                  <FaFilter className="mr-2" />
+                  Filters
+                </button>
+                <button 
+                  className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                  onClick={() => handleSort("name")}
+                >
+                  <FaSortAmountDown className="mr-2" />
+                  Sort
+                </button>
+              </div>
             </div>
           </div>
-        )}
-        
+        </div>
+
+        <ProgramList 
+          searchTerm={searchTerm} 
+          sortField={sortField} 
+          sortDirection={sortDirection} 
+          onSort={handleSort}
+        />
+
         {isModalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-            <div className="bg-white p-8 rounded shadow-lg w-full max-w-lg">
-              <ProgramForm 
-                onSuccess={handleProgramCreated} 
-                onCancel={() => setIsModalOpen(false)} 
-              />
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
+            <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-lg">
+              <div className="flex items-center justify-between mb-4 pb-2 border-b">
+                <div className="flex items-center">
+                  <FaHospitalAlt className="text-green-600 mr-2 text-xl" />
+                  <h2 className="text-xl font-bold">Add New Program</h2>
+                </div>
+                <button 
+                  onClick={() => setIsModalOpen(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <ProgramForm onSuccess={handleSuccess} onCancel={() => setIsModalOpen(false)} />
             </div>
           </div>
         )}
