@@ -18,6 +18,14 @@ import {
 
 export default function ApiDocsPage() {
   const [activeTab, setActiveTab] = useState("overview");
+  
+  // Safe way to get origin that works on both client and server
+  const getBaseUrl = () => {
+    if (typeof window !== 'undefined') {
+      return process.env.NEXT_PUBLIC_API_URL || window.location.origin;
+    }
+    return process.env.NEXT_PUBLIC_API_URL || '';
+  };
 
   return (
     <DashboardLayout>
@@ -35,7 +43,7 @@ export default function ApiDocsPage() {
           <div className="flex items-center">
             <FaInfoCircle className="text-indigo-500 mr-2" />
             <p className="text-sm text-indigo-600">
-              All endpoints are relative to the base URL: <code className="bg-gray-100 px-2 py-1 rounded">{process.env.NEXT_PUBLIC_API_URL || window.location.origin}</code>
+              All endpoints are relative to the base URL: <code className="bg-gray-100 px-2 py-1 rounded">{getBaseUrl()}</code>
             </p>
           </div>
         </div>
@@ -103,61 +111,62 @@ export default function ApiDocsPage() {
               title="Get All Clients"
               description="Retrieve a list of all clients"
               method="GET"
-              endpoint="/api/clients"
+              endpoint="/api/client"
               responseExample={`[
   {
-    "id": 1,
-    "name": "John Doe",
-    "dateOfBirth": "1985-05-15",
-    "gender": "Male",
-    "contactNumber": "+1234567890",
-    "address": "123 Main St, City"
-  },
-  ...
+    "id": "123",
+    "first_name": "John",
+    "last_name": "Doe",
+    "date_of_birth": "1990-01-01",
+    "gender": "male",
+    "contact_number": "1234567890",
+    "email": "john@example.com",
+    "address": "123 Main St",
+    "created_at": "2023-01-01T00:00:00Z"
+  }
 ]`}
             />
-
             <EndpointCard
               title="Get Client by ID"
               description="Retrieve a specific client by ID"
               method="GET"
-              endpoint="/api/clients/:id"
+              endpoint="/api/client/[id]"
               responseExample={`{
-  "id": 1,
-  "name": "John Doe",
-  "dateOfBirth": "1985-05-15",
-  "gender": "Male",
-  "contactNumber": "+1234567890",
-  "address": "123 Main St, City",
-  "enrollments": [
-    {
-      "programId": 1,
-      "programName": "TB Treatment",
-      "enrollmentDate": "2023-01-15"
-    }
-  ]
+  "id": "123",
+  "first_name": "John",
+  "last_name": "Doe",
+  "date_of_birth": "1990-01-01",
+  "gender": "male",
+  "contact_number": "1234567890",
+  "email": "john@example.com",
+  "address": "123 Main St",
+  "created_at": "2023-01-01T00:00:00Z"
 }`}
             />
-
             <EndpointCard
               title="Create Client"
               description="Create a new client"
               method="POST"
-              endpoint="/api/clients"
+              endpoint="/api/client"
               requestExample={`{
-  "name": "Jane Smith",
-  "dateOfBirth": "1990-08-20",
-  "gender": "Female",
-  "contactNumber": "+0987654321",
-  "address": "456 Oak Ave, Town"
+  "first_name": "Jane",
+  "last_name": "Smith",
+  "date_of_birth": "1995-05-15",
+  "gender": "female",
+  "contact_number": "9876543210",
+  "email": "jane@example.com",
+  "address": "456 Oak St"
 }`}
               responseExample={`{
-  "id": 2,
-  "name": "Jane Smith",
-  "dateOfBirth": "1990-08-20",
-  "gender": "Female",
-  "contactNumber": "+0987654321",
-  "address": "456 Oak Ave, Town"
+  "id": "456",
+  "first_name": "Jane",
+  "last_name": "Smith",
+  "date_of_birth": "1995-05-15",
+  "gender": "female",
+  "contact_number": "9876543210",
+  "email": "jane@example.com",
+  "address": "456 Oak St",
+  "created_at": "2023-01-02T00:00:00Z"
 }`}
             />
           </TabsContent>
@@ -167,31 +176,33 @@ export default function ApiDocsPage() {
               title="Get All Programs"
               description="Retrieve a list of all health programs"
               method="GET"
-              endpoint="/api/programs"
+              endpoint="/api/program"
               responseExample={`[
   {
-    "id": 1,
-    "name": "TB Treatment",
-    "description": "Tuberculosis treatment program",
-    "startDate": "2023-01-01",
-    "active": true
-  },
-  ...
+    "id": "789",
+    "name": "Diabetes Management",
+    "description": "Program for managing diabetes",
+    "status": "active",
+    "created_at": "2023-01-01T00:00:00Z"
+  }
 ]`}
             />
-
             <EndpointCard
-              title="Get Program by ID"
-              description="Retrieve a specific program by ID"
-              method="GET"
-              endpoint="/api/programs/:id"
+              title="Create Program"
+              description="Create a new health program"
+              method="POST"
+              endpoint="/api/program"
+              requestExample={`{
+  "name": "Hypertension Management",
+  "description": "Program for managing hypertension",
+  "status": "active"
+}`}
               responseExample={`{
-  "id": 1,
-  "name": "TB Treatment",
-  "description": "Tuberculosis treatment program",
-  "startDate": "2023-01-01",
-  "active": true,
-  "enrolledClients": 3
+  "id": "101",
+  "name": "Hypertension Management",
+  "description": "Program for managing hypertension",
+  "status": "active",
+  "created_at": "2023-01-03T00:00:00Z"
 }`}
             />
           </TabsContent>
@@ -201,33 +212,39 @@ export default function ApiDocsPage() {
               title="Get Enrollments"
               description="Retrieve enrollments by client ID or program ID"
               method="GET"
-              endpoint="/api/enrollments"
+              endpoint="/api/enrollment?clientId=[id]"
               responseExample={`[
   {
-    "id": 1,
-    "clientId": 1,
-    "programId": 1,
-    "enrollmentDate": "2023-01-15"
-  },
-  ...
+    "id": "222",
+    "client_id": "123",
+    "program_id": "789",
+    "enrollment_date": "2023-01-15T00:00:00Z",
+    "status": "active",
+    "program": {
+      "id": "789",
+      "name": "Diabetes Management",
+      "description": "Program for managing diabetes",
+      "status": "active"
+    }
+  }
 ]`}
             />
-
             <EndpointCard
               title="Create Enrollment"
               description="Enroll a client in a health program"
               method="POST"
-              endpoint="/api/enrollments"
+              endpoint="/api/enrollment"
               requestExample={`{
-  "clientId": 1,
-  "programId": 2,
-  "enrollmentDate": "2023-03-10"
+  "client_id": "456",
+  "program_id": "101",
+  "status": "active"
 }`}
               responseExample={`{
-  "id": 3,
-  "clientId": 1,
-  "programId": 2,
-  "enrollmentDate": "2023-03-10"
+  "id": "333",
+  "client_id": "456",
+  "program_id": "101",
+  "enrollment_date": "2023-01-20T00:00:00Z",
+  "status": "active"
 }`}
             />
           </TabsContent>
