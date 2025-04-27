@@ -22,15 +22,26 @@ export default function Home() {
   // Fetch statistics from the API
   useEffect(() => {
     const fetchStats = async () => {
+      setIsLoading(true);
       try {
+        console.log('Fetching dashboard statistics...');
         const response = await fetch('/api/stats');
-        if (response.ok) {
-          const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(`Error fetching stats: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Stats received:', data);
+        
+        if (data && typeof data.clientCount !== 'undefined') {
           setStats({
             clientCount: data.clientCount,
             programCount: data.programCount,
             enrollmentCount: data.enrollmentCount
           });
+        } else {
+          console.error('Invalid stats data format:', data);
         }
       } catch (error) {
         console.error('Error fetching statistics:', error);
@@ -138,7 +149,6 @@ export default function Home() {
       {/* Main actions */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h2 className="text-2xl font-bold mb-6 text-gray-800">Quick Actions</h2>
-        
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
             <div className="p-6">
@@ -157,7 +167,7 @@ export default function Home() {
               </div>
               <p className="text-gray-600 mb-4">Manage client profiles and enrollments</p>
               <Link 
-                href="/dashboard/clients"
+                href="/clients"
                 className="inline-block text-blue-600 hover:text-blue-800 font-medium">
                 View all clients
               </Link>
@@ -181,7 +191,7 @@ export default function Home() {
               </div>
               <p className="text-gray-600 mb-4">Create and manage health programs</p>
               <Link 
-                href="/dashboard/programs"
+                href="/programs"
                 className="inline-block text-green-600 hover:text-green-800 font-medium">
                 View all programs
               </Link>

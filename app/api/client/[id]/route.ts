@@ -9,6 +9,10 @@ export async function GET(
 ) {
   const clientId = params.id;
 
+  if (!clientId) {
+    return NextResponse.json({ error: "Client ID is required" }, { status: 400 });
+  }
+
   try {
     const supabase = createServerSupabaseClient();
 
@@ -19,27 +23,41 @@ export async function GET(
       .eq("id", clientId)
       .single();
 
-    if (clientError) throw clientError;
+    if (clientError) {
+      console.error("Error fetching client:", clientError);
+      throw clientError;
+    }
 
     if (!client) {
       return NextResponse.json({ error: "Client not found" }, { status: 404 });
     }
 
-    // Get the client's enrolled programs with join to programs table
+    // Get the client's enrolled programs
     const { data: enrollments, error: enrollmentsError } = await supabase
       .from("client_programs")
-      .select(
-        `
+      .select(`
         id,
         enrollment_date,
         status,
         notes,
-        program:programs(id, name, description, status)
-        `
-      )
-      .eq("client_id", clientId);
+        program:programs(
+          id, 
+          name, 
+          description, 
+          status
+        )
+      `)
+      .eq("client_id", clientId)
+      .order('enrollment_date', { ascending: false });
 
-    if (enrollmentsError) throw enrollmentsError;
+    if (enrollmentsError) {
+      console.error("Error fetching enrollments:", enrollmentsError);
+      // Return client without programs if enrollment fetch fails
+      return NextResponse.json({
+        ...client,
+        programs: [],
+      });
+    }
 
     // Format the programs data
     const programs = enrollments.map((enrollment) => ({
@@ -58,7 +76,7 @@ export async function GET(
       programs,
     });
   } catch (error) {
-    console.error("Error fetching client:", error);
+    console.error("Error fetching client details:", error);
     return NextResponse.json(
       { error: "Failed to fetch client details" },
       { status: 500 }
