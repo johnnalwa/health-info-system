@@ -5,8 +5,13 @@ import { Client, Program } from "@/lib/types";
 import { FaArrowLeft, FaCalendarPlus } from "react-icons/fa";
 import Link from "next/link";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import { use } from "react";
 
 export default function ClientDetailPage({ params }: { params: { id: string } }) {
+  // Unwrap params with React.use() to handle the Promise
+  const unwrappedParams = use(params);
+  const clientId = unwrappedParams.id;
+  
   const [client, setClient] = useState<Client | null>(null);
   const [enrolledPrograms, setEnrolledPrograms] = useState<Program[]>([]);
   const [availablePrograms, setAvailablePrograms] = useState<Program[]>([]);
@@ -21,8 +26,8 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
     const fetchClientDetails = async () => {
       try {
         setIsLoading(true);
-        // Fetch client details
-        const clientResponse = await fetch(`/api/client/${params.id}`);
+        // Fetch client details using unwrapped clientId
+        const clientResponse = await fetch(`/api/client/${clientId}`);
         if (!clientResponse.ok) {
           throw new Error("Failed to fetch client details");
         }
@@ -30,7 +35,7 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
         setClient(clientData);
 
         // Fetch client's enrolled programs
-        const enrollmentsResponse = await fetch(`/api/enrollment?clientId=${params.id}`);
+        const enrollmentsResponse = await fetch(`/api/enrollment?clientId=${clientId}`);
         if (enrollmentsResponse.ok) {
           const enrollmentsData = await enrollmentsResponse.json();
           setEnrolledPrograms(enrollmentsData);
@@ -53,7 +58,7 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
     };
 
     fetchClientDetails();
-  }, [params.id]);
+  }, [clientId]); // Use unwrapped clientId in dependency array
 
   const handleEnrollment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,7 +72,7 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          client_id: params.id,
+          client_id: clientId, // Use unwrapped clientId
           program_id: selectedProgram,
           notes: enrollmentNote,
           status: "active",
@@ -79,7 +84,7 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
       }
 
       // Refresh enrolled programs
-      const enrollmentsResponse = await fetch(`/api/enrollment?clientId=${params.id}`);
+      const enrollmentsResponse = await fetch(`/api/enrollment?clientId=${clientId}`);
       if (enrollmentsResponse.ok) {
         const enrollmentsData = await enrollmentsResponse.json();
         setEnrolledPrograms(enrollmentsData);
